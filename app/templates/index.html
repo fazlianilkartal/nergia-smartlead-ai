@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>NERGIA SmartLead AI</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f7f3ec;
+            color: #2f3a2f;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 60px auto;
+            padding: 30px;
+        }
+
+        .logo {
+            font-size: 42px;
+            font-weight: bold;
+            letter-spacing: 4px;
+            color: #355c44;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #7a6c5d;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        textarea,
+        input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 14px;
+            margin-top: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #d8d0c4;
+            border-radius: 10px;
+            font-size: 16px;
+        }
+
+        button {
+            background: #355c44;
+            color: white;
+            border: none;
+            padding: 13px 22px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background: #274534;
+        }
+
+        #cevap {
+            margin-top: 20px;
+            padding: 15px;
+            background: #eef2ec;
+            border-radius: 10px;
+            min-height: 30px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="logo">NERGIA</div>
+    <div class="subtitle">
+        Çiçeklerin anlamını keşfet, sana en uygun seçimi birlikte bulalım.
+    </div>
+
+    <div class="card">
+        <h2>NERGIA AI Asistan</h2>
+
+        <textarea
+            id="mesaj"
+            rows="4"
+            placeholder="Örneğin: Annem için zarif ve anlamlı bir çiçek önerir misin?"
+        ></textarea>
+
+        <button onclick="sohbetEt()">Sor</button>
+
+        <div id="cevap">
+            Size nasıl yardımcı olabilirim?
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Bizimle İletişime Geçin</h2>
+
+        <input
+            id="isim"
+            type="text"
+            placeholder="Ad Soyad"
+        >
+
+        <input
+            id="telefon"
+            type="text"
+            placeholder="Telefon"
+        >
+
+        <button onclick="leadKaydet()">Kaydet</button>
+
+        <div id="kayitMesaji"></div>
+    </div>
+
+</div>
+
+<script>
+async function sohbetEt() {
+    const mesaj = document.getElementById("mesaj").value;
+    const cevapAlani = document.getElementById("cevap");
+
+    cevapAlani.innerText = "Yanıt hazırlanıyor...";
+
+    try {
+        const response = await fetch("/api/sohbet", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                mesaj: mesaj
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.basari) {
+            cevapAlani.innerText = data.cevap;
+        } else {
+            cevapAlani.innerText = data.hata;
+        }
+
+    } catch (error) {
+        cevapAlani.innerText = "Bir bağlantı hatası oluştu.";
+    }
+}
+
+
+async function leadKaydet() {
+    const isim = document.getElementById("isim").value;
+    const telefon = document.getElementById("telefon").value;
+    const mesaj = document.getElementById("mesaj").value;
+
+    const kayitMesaji = document.getElementById("kayitMesaji");
+
+    try {
+        const response = await fetch("/api/leads", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                isim: isim,
+                telefon: telefon,
+                mesaj: mesaj
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.basari) {
+            kayitMesaji.innerText = "Bilgileriniz başarıyla kaydedildi.";
+        } else {
+            kayitMesaji.innerText = data.hata;
+        }
+
+    } catch (error) {
+        kayitMesaji.innerText = "Kayıt sırasında bir hata oluştu.";
+    }
+}
+</script>
+
+</body>
+</html>

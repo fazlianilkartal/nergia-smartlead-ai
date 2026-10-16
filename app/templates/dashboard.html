@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>NERGIA Lead Paneli</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f7f3ec;
+            color: #2f3a2f;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 50px auto;
+            padding: 30px;
+        }
+
+        .logo {
+            font-size: 36px;
+            font-weight: bold;
+            letter-spacing: 4px;
+            color: #355c44;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #7a6c5d;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 18px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 14px;
+            border-bottom: 1px solid #e4ddd3;
+        }
+
+        th {
+            background: #355c44;
+            color: white;
+        }
+
+        tr:hover {
+            background: #f3efe8;
+        }
+
+        .empty {
+            padding: 20px;
+            text-align: center;
+            color: #777;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="logo">NERGIA</div>
+    <div class="subtitle">
+        Müşteri Adayları Yönetim Paneli
+    </div>
+
+    <div class="card">
+
+        <table>
+            <thead>
+                <tr>
+                    <th>İsim</th>
+                    <th>Telefon</th>
+                    <th>Mesaj</th>
+                    <th>Tarih</th>
+                </tr>
+            </thead>
+
+            <tbody id="leadTablosu">
+            </tbody>
+        </table>
+
+        <div id="bosMesaj" class="empty"></div>
+
+    </div>
+
+</div>
+
+<script>
+async function leadleriYukle() {
+    const tablo = document.getElementById("leadTablosu");
+    const bosMesaj = document.getElementById("bosMesaj");
+
+    try {
+        const response = await fetch("/api/leads");
+        const data = await response.json();
+
+        if (!data.basari) {
+            bosMesaj.innerText = "Kayıtlar alınamadı.";
+            return;
+        }
+
+        if (data.leads.length === 0) {
+            bosMesaj.innerText = "Henüz kayıt bulunmuyor.";
+            return;
+        }
+
+        data.leads.forEach(lead => {
+            const satir = document.createElement("tr");
+
+            satir.innerHTML = `
+                <td>${lead.isim}</td>
+                <td>${lead.telefon}</td>
+                <td>${lead.mesaj || ""}</td>
+                <td>${lead.tarih}</td>
+            `;
+
+            tablo.appendChild(satir);
+        });
+
+    } catch (error) {
+        bosMesaj.innerText = "Veriler yüklenirken hata oluştu.";
+    }
+}
+
+leadleriYukle();
+</script>
+
+</body>
+</html>
