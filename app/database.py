@@ -28,21 +28,27 @@ def init_db(app):
                 isim TEXT NOT NULL,
                 telefon TEXT NOT NULL,
                 mesaj TEXT,
+                eposta TEXT NOT NULL DEFAULT '',
                 tarih TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
+
+        # Eski kayitlari koruyarak e-posta sutununu ekle.
+        sutunlar = {satir[1] for satir in db.execute("PRAGMA table_info(leads)")}
+        if "eposta" not in sutunlar:
+            db.execute("ALTER TABLE leads ADD COLUMN eposta TEXT NOT NULL DEFAULT ''")
 
         db.commit()
 
     app.teardown_appcontext(close_db)
 
 
-def lead_ekle(isim, telefon, mesaj=None):
+def lead_ekle(isim, telefon, mesaj=None, eposta=""):
     db = get_db()
 
     db.execute(
-        "INSERT INTO leads (isim, telefon, mesaj) VALUES (?, ?, ?)",
-        (isim, telefon, mesaj)
+        "INSERT INTO leads (isim, telefon, mesaj, eposta) VALUES (?, ?, ?, ?)",
+        (isim, telefon, mesaj, eposta)
     )
 
     db.commit()
@@ -53,7 +59,7 @@ def tum_leadler():
 
     kayitlar = db.execute(
         """
-        SELECT id, isim, telefon, mesaj, tarih
+        SELECT id, isim, telefon, mesaj, eposta, tarih
         FROM leads
         ORDER BY id DESC
         """

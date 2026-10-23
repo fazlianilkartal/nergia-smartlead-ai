@@ -1,3 +1,5 @@
+import re
+
 from flask import Blueprint, jsonify, render_template, request
 
 from app.database import lead_ekle, tum_leadler
@@ -49,8 +51,15 @@ def sohbet():
 def lead_olustur():
     data = request.get_json(silent=True) or {}
 
+    if not isinstance(data, dict) or any(
+        not isinstance(data.get(alan, ""), str)
+        for alan in ("isim", "telefon", "eposta", "mesaj")
+    ):
+        return jsonify({"basari": False, "hata": "Form alanlari metin olmalidir."}), 400
+
     isim = data.get("isim", "").strip()
     telefon = data.get("telefon", "").strip()
+    eposta = data.get("eposta", "").strip()
     mesaj = data.get("mesaj", "").strip()
 
     if not isim or not telefon:
@@ -59,7 +68,13 @@ def lead_olustur():
             "hata": "Isim ve telefon zorunludur."
         }), 400
 
-    lead_ekle(isim, telefon, mesaj)
+    if eposta and not re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]+", eposta):
+        return jsonify({"basari": False, "hata": "Gecerli bir e-posta adresi girin."}), 400
+
+    if len(isim) > 150 or len(telefon) > 40 or len(eposta) > 254 or len(mesaj) > 5000:
+        return jsonify({"basari": False, "hata": "Form alanlari cok uzun."}), 400
+
+    lead_ekle(isim, telefon, mesaj, eposta)
 
     return jsonify({
         "basari": True,
