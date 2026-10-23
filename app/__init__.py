@@ -15,10 +15,9 @@ def create_app():
     config_class = config_by_name.get(ortam, config_by_name["development"])
     app.config.from_object(config_class)
 
-    CORS(
-        app,
-        resources={r"/api/*": {"origins": app.config["CORS_ORIGINS"]}}
-    )
+    CORS(app)
+    
+    
 
     init_db(app)
 
