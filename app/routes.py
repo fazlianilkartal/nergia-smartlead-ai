@@ -1,3 +1,6 @@
+import hashlib
+import hmac
+
 import re
 
 from flask import Blueprint, jsonify, render_template, request
@@ -84,6 +87,12 @@ def lead_olustur():
 
 @api_bp.route("/leads", methods=["GET"])
 def leadleri_getir():
+    # Wix arka ucundeki anahtarin yalniz SHA-256 ozeti burada tutulur.
+    beklenen_ozet = "a6336ec44db6699f8308031f067d22bc87a6f50d33b3e0a490dd350221060115"
+    yetki = request.headers.get("Authorization", "")
+    token = yetki[7:] if yetki.startswith("Bearer ") else ""
+    if not token or not hmac.compare_digest(hashlib.sha256(token.encode()).hexdigest(), beklenen_ozet):
+        return jsonify({"basari": False, "hata": "Yonetici erisimi gerekli."}), 401
     return jsonify({
         "basari": True,
         "leads": tum_leadler()
